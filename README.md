@@ -1,3 +1,19 @@
+# 基于portainer1.19.2进行修改
+
+https://portainer.readthedocs.io/en/1.19.2/contribute.html
+
+Build
+Checkout the project and go inside the root directory:
+
+$ git clone https://github.com/portainer/portainer.git
+$ cd portainer
+Install dependencies with yarn:
+
+$ yarn
+Build the app locally:
+
+$ yarn build
+
 
 <p align="center">
   <img title="portainer" src='https://portainer.io/images/logo_alt.png' />

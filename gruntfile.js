@@ -2,6 +2,7 @@ var gruntfile_cfg = {};
 var loadGruntTasks = require('load-grunt-tasks');
 var os = require('os');
 var arch = os.arch();
+var platform = os.platform();
 if ( arch === 'x64' ) arch = 'amd64';
 
 module.exports = function (grunt) {
@@ -47,11 +48,31 @@ module.exports = function (grunt) {
     'copy',
     'after-copy'
   ]);
-  grunt.task.registerTask('release', 'release:<platform>:<arch>', function(p, a) {
-    grunt.task.run(['config:prod', 'clean:all', 'shell:buildBinary:'+p+':'+a, 'shell:downloadDockerBinary:'+p+':'+a, 'before-copy', 'copy:assets', 'after-copy' ]);
+
+
+  // 本地打包
+  grunt.registerTask('build-local', [
+      'build',
+      'shell:build_go'
+  ]);
+
+  // 发布正式版本
+  grunt.task.registerTask('release', 'release:linux:amd64', function(p, a) {
+      grunt.task.run(['build', 'shell:build_go:linux:amd64', 'shell:build_and_push_image']);
   });
+
+  // grunt.task.registerTask('release', 'release:<platform>:<arch>', function(p, a) {
+  //   grunt.task.run(['config:prod', 'clean:all', 'shell:buildBinary:'+p+':'+a, 'shell:downloadDockerBinary:'+p+':'+a, 'before-copy', 'copy:assets', 'after-copy' ]);
+  // });
+
+
+
   grunt.registerTask('lint', ['eslint']);
-  grunt.registerTask('run-dev', ['build', 'shell:run:'+arch, 'watch:build']);
+  // grunt.registerTask('run-dev', ['build', 'shell:run:'+arch, 'watch:build']);
+
+  // 自己跑本地main.go开发。
+  grunt.registerTask('run-dev', ['build', 'watch:build']);
+
   grunt.registerTask('clear', ['clean:app']);
 
   // Load content of `vendor.yml` to src.jsVendor, src.cssVendor and src.angularVendor
@@ -268,6 +289,22 @@ function shell_buildBinary(p, a) {
   ].join(' ');
 }
 
+// 本地编译go main
+function shell_buildGo(p, a) {
+    return [
+        'build/build_go.sh ' + p + ' ' + a + ';',
+    ].join(' ');
+}
+
+// 构建镜像推送到仓库
+function shell_build_and_push_image() {
+    return [
+        'build/build_and_push_image.sh;',
+    ].join(' ');
+}
+
+
+
 function shell_run(arch) {
   return [
     'docker rm -f portainer',
@@ -291,6 +328,8 @@ function shell_downloadDockerBinary(p, a) {
 }
 
 gruntfile_cfg.shell = {
+  build_go: { command: shell_buildGo },
+  build_and_push_image: { command: shell_build_and_push_image },
   buildBinary: { command: shell_buildBinary },
   run: { command: shell_run },
   downloadDockerBinary: { command: shell_downloadDockerBinary }

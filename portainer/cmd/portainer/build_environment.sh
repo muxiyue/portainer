@@ -48,7 +48,8 @@ pkgPath="$goPath/src/$pkgName"
 mkdir -p "$(dirname "$pkgPath")"
 
 # Link source dir into GOPATH
-ln -sf $mainPackagePath/../.. "$pkgPath"
+# 暂时屏蔽掉，工程本身就是放在$GOPATH/src下面
+#ln -sf $mainPackagePath/../.. "$pkgPath"
 
 if [ -e "$pkgPath/vendor" ];
 then
